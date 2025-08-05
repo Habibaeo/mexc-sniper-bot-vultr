@@ -143,7 +143,14 @@ def main():
 
     print(f"🧮 Order Preview => Type: {order_type}, Qty: {qty}, Price: {price if order_type == 'MARKET' else limit_price}")
 
-    order = place_order(symbol, "BUY", order_type, qty, limit_price if order_type == "LIMIT" else None)
+    while True:
+        order = place_order(symbol, "BUY", order_type, qty, limit_price if order_type == "LIMIT" else None)
+        if "code" in order and order["code"] == 10007:
+            print(f"⏳ Symbol not yet tradeable (Error 10007). Retrying in {delay}s...")
+            time.sleep(delay)
+            continue
+        break
+
     print(f"📦 Order Response: {order}")
 
     order_id = order.get("orderId")
@@ -166,3 +173,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
