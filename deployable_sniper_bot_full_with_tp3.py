@@ -67,6 +67,7 @@ def place_order(symbol, side, order_type, quantity, price=None):
         "quantity": quantity,
         "timestamp": get_server_time()
     }
+    params['recvWindow'] = 5000  # 5 seconds
     if order_type == "LIMIT":
         params["price"] = price
         params["timeInForce"] = "GTC"
@@ -173,4 +174,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
