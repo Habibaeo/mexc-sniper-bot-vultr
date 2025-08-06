@@ -67,7 +67,6 @@ def place_order(symbol, side, order_type, quantity, price=None):
         "quantity": quantity,
         "timestamp": get_server_time()
     }
-    params['recvWindow'] = 5000  # 5 seconds
     if order_type == "LIMIT":
         params["price"] = price
         params["timeInForce"] = "GTC"
@@ -136,11 +135,32 @@ def main():
 
     print(f"📈 Live Price: {price:.8f} USDT")
 
-    qty = round_quantity(budget / price, qty_precision)
+    # Debug info
+    print(f"💰 Price used for Qty calculation: {limit_price if order_type == 'LIMIT' else price}")
+    print(f"💸 Budget: {budget}")
 
+    # Compute raw qty
+    raw_qty = budget / (limit_price if order_type == 'LIMIT' else price)
+    print(f"🧮 Raw Quantity = {raw_qty}")
+
+    # Show step size and precision
+    print(f"🔢 Step Size: {step_size}, Qty Precision: {qty_precision}")
+
+    # Round quantity
+    qty = round_quantity(raw_qty, qty_precision)
+    print(f"🎯 Rounded Quantity: {qty}")
+
+    # Check against minQty
     if qty < min_qty:
         print(f"❌ Computed quantity {qty} is below minQty {min_qty}. Increase budget or check token rules.")
         return
+
+    # Optional: Check notional value
+    notional = qty * (limit_price if order_type == "LIMIT" else price)
+    if notional < 1.0:
+        print(f"❌ Total order value (${notional:.4f} USDT) is below the 1 USDT minimum. Increase budget or adjust price.")
+        return
+
 
     print(f"🧮 Order Preview => Type: {order_type}, Qty: {qty}, Price: {price if order_type == 'MARKET' else limit_price}")
 
@@ -174,5 +194,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
